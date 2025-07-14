@@ -1,69 +1,33 @@
-#[derive(Debug)]
+use thiserror::Error;
+
+#[derive(Debug, Error)]
 pub enum GraphBuilderError {
-    Module,
+    #[error("module error: {0}")]
+    Module(#[from] ModuleError),
 }
 
-impl From<ModuleError> for GraphBuilderError {
-    fn from(_error: ModuleError) -> Self {
-        Self::Module
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum ModuleError {
-    Api,
-    Serde,
-    Reqwest,
-    Storage,
+    #[error("api error: {0}")]
+    Api(#[from] ApiError),
+    #[error("serde error: {0}")]
+    Serde(#[from] serde_json::Error),
+    #[error("reqwest error: {0}")]
+    Reqwest(#[from] reqwest::Error),
+    #[error("storage error: {0}")]
+    Storage(#[from] StorageError),
 }
 
-impl From<ApiError> for ModuleError {
-    fn from(_error: ApiError) -> Self {
-        Self::Api
-    }
-}
-
-impl From<serde_json::Error> for ModuleError {
-    fn from(_error: serde_json::Error) -> Self {
-        Self::Serde
-    }
-}
-
-impl From<reqwest::Error> for ModuleError {
-    fn from(_error: reqwest::Error) -> Self {
-        Self::Reqwest
-    }
-}
-
-impl From<StorageError> for ModuleError {
-    fn from(_error: StorageError) -> Self {
-        Self::Storage
-    }
-}
-
+#[derive(Debug, Error)]
 pub enum ApiError {
-    Reqwest,
+    #[error("reqwest error: {0}")]
+    Reqwest(#[from] reqwest::Error),
 }
 
-impl From<reqwest::Error> for ApiError {
-    fn from(_error: reqwest::Error) -> Self {
-        Self::Reqwest
-    }
-}
-
+#[derive(Debug, Error)]
 pub enum StorageError {
-    Io,
-    Serde,
-}
-
-impl From<std::io::Error> for StorageError {
-    fn from(_error: std::io::Error) -> Self {
-        Self::Io
-    }
-}
-
-impl From<serde_json::Error> for StorageError {
-    fn from(_error: serde_json::Error) -> Self {
-        Self::Serde
-    }
+    #[error("io error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("serde error: {0}")]
+    Serde(#[from] serde_json::Error),
 }
