@@ -41,7 +41,12 @@ pub struct ModuleInfo {
 pub enum PrereqTree {
     Module(String),
     Logic {
+        #[serde(skip_serializing_if = "Option::is_none")]
         and: Option<Vec<PrereqTree>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         or: Option<Vec<PrereqTree>>,
-    }
+        #[serde(skip_serializing_if = "Option::is_none")]
+        #[serde(rename = "nOf")]
+        n_of: Option<(u32, Vec<PrereqTree>)>,
+    },
 }
