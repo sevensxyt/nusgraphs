@@ -7,7 +7,7 @@ use futures::future::try_join_all;
 const CHUNK_SIZE: usize = 100;
 
 pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
-    if let Some(module_infos) = storage::read_module_infos() {
+    if let Some(module_infos) = storage::read::<ModuleInfo>() {
         println!("Loaded {} module infos from storage", module_infos.len());
         Ok(module_infos)
     } else {
@@ -29,13 +29,13 @@ pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
             println!("Processed {} module infos", module_infos.len());
         }
 
-        storage::write_module_infos(&module_infos)?;
+        storage::write::<ModuleInfo>(&module_infos)?;
         Ok(module_infos)
     }
 }
 
 async fn get_all_modules() -> Result<Vec<Module>, ModuleError> {
-    Ok(match storage::read_modules() {
+    Ok(match storage::read::<Module>() {
         Some(modules) => {
             println!("Loaded {} modules from storage", modules.len());
             modules
@@ -43,7 +43,7 @@ async fn get_all_modules() -> Result<Vec<Module>, ModuleError> {
         None => {
             let modules = fetch_all_modules().await?;
             let modules: Vec<Module> = serde_json::from_str(&modules)?;
-            storage::write_modules(&modules)?;
+            storage::write::<Module>(&modules)?;
             modules
         }
     })
