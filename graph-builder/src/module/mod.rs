@@ -4,7 +4,7 @@ use crate::models::{Module, ModuleInfo};
 use crate::storage::{self, Storable};
 
 pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
-    if let Some(module_infos) = storage::read::<ModuleInfo>() {
+    if let Some(module_infos) = storage::read_collection::<ModuleInfo>() {
         println!(
             "Loaded {} module infos from storage at {}",
             module_infos.len(),
@@ -24,13 +24,13 @@ pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
             .map(|result| serde_json::from_str::<ModuleInfo>(&result))
             .collect::<Result<_, _>>()?;
 
-        storage::write::<ModuleInfo>(&deserialised)?;
+        storage::write_collection::<ModuleInfo>(&deserialised)?;
         Ok(deserialised)
     }
 }
 
 async fn get_all_modules() -> Result<Vec<Module>, ModuleError> {
-    if let Some(modules) = storage::read::<Module>() {
+    if let Some(modules) = storage::read_collection::<Module>() {
         println!(
             "Loaded {} modules from storage at {}",
             modules.len(),
@@ -40,7 +40,7 @@ async fn get_all_modules() -> Result<Vec<Module>, ModuleError> {
     } else {
         let modules = fetch_all_modules().await?;
         let modules: Vec<Module> = serde_json::from_str(&modules)?;
-        storage::write::<Module>(&modules)?;
+        storage::write_collection::<Module>(&modules)?;
         Ok(modules)
     }
 }

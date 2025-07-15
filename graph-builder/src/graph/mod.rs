@@ -12,19 +12,27 @@ impl GraphTransformer {
     }
 
     pub fn build(&self) -> Result<(), GraphError> {
-        if Self::exists() {
+        let graph = if let Some(graph) = storage::read_object::<Graph>() {
             println!("Graph exists at {}", Graph::path());
+            graph
         } else {
             let graph = self.transform();
-            storage::write(&vec![graph])?;
+            storage::write_object(&graph)?;
             println!("Graph written to storage at {}", Graph::path());
-        }
+            graph
+        };
+
+        println!(
+            "Statistics:\nNodes: {}\nEdges: {}",
+            graph.nodes.len(),
+            graph.edges.len()
+        );
 
         Ok(())
     }
 
     pub fn exists() -> bool {
-        storage::read::<Graph>().is_some()
+        storage::read_object::<Graph>().is_some()
     }
 
     pub fn transform(&self) -> Graph {
