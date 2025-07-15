@@ -1,14 +1,23 @@
 mod api;
 mod errors;
+mod graph;
 mod models;
 mod module;
 mod storage;
 
 use crate::errors::GraphBuilderError;
+use crate::models::Graph;
+use crate::storage::Storable;
 
 #[tokio::main]
 async fn main() -> Result<(), GraphBuilderError> {
-    let module_infos = module::get_all_module_infos().await?;
-    println!("Done, loaded {} module infos", module_infos.len());
+    if graph::GraphTransformer::exists() {
+        println!("Graph exists at {}", Graph::path());
+    } else {
+        let module_infos = module::get_all_module_infos().await?;
+        graph::GraphTransformer::new(module_infos).build()?;
+        println!("Graph building complete");
+    }
+
     Ok(())
 }

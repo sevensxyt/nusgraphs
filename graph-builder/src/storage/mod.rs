@@ -1,6 +1,6 @@
 use crate::errors::StorageError;
-use crate::models::{Module, ModuleInfo};
-use serde::{de::DeserializeOwned, Serialize};
+use crate::models::{Graph, Module, ModuleInfo};
+use serde::{Serialize, de::DeserializeOwned};
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 
@@ -17,6 +17,12 @@ impl Storable for Module {
 impl Storable for ModuleInfo {
     fn path() -> &'static str {
         "data/module_infos.json"
+    }
+}
+
+impl Storable for Graph {
+    fn path() -> &'static str {
+        "data/graph.json"
     }
 }
 

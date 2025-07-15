@@ -10,30 +10,30 @@ pub struct Module {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ModuleInfo {
     #[serde(rename = "moduleCode")]
-    module_code: String,
+    pub module_code: String,
 
     #[serde(rename = "acadYear")]
-    acad_year: String,
+    pub acad_year: String,
 
-    title: String,
-    description: String,
-    department: String,
-    faculty: String,
+    pub title: String,
+    pub description: String,
+    pub department: String,
+    pub faculty: String,
 
     #[serde(rename = "moduleCredit")]
-    module_credit: String,
+    pub module_credit: String,
 
     #[serde(default)]
-    prerequisite: Option<String>,
+    pub prerequisite: Option<String>,
 
     #[serde(default)]
-    preclusion: Option<String>,
+    pub preclusion: Option<String>,
 
     #[serde(rename = "prereqTree", default)]
-    prereq_tree: Option<PrereqTree>,
+    pub prereq_tree: Option<PrereqTree>,
 
     #[serde(rename = "fulfillRequirements", default)]
-    fulfill_requirements: Vec<String>,
+    pub fulfill_requirements: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -49,4 +49,53 @@ pub enum PrereqTree {
         #[serde(rename = "nOf")]
         n_of: Option<(u32, Vec<PrereqTree>)>,
     },
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Position {
+    pub x: f64,
+    pub y: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NodeData {
+    pub label: String,
+
+    #[serde(rename = "moduleCode")]
+    pub module_code: String,
+    pub title: String,
+    pub department: String,
+    pub description: String,
+
+    #[serde(rename = "moduleCredit")]
+    pub module_credit: String,
+
+    #[serde(rename = "acadYear")]
+    pub acad_year: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Node {
+    pub id: String,
+    pub position: Position,
+    pub data: NodeData,
+    pub node_type: String,
+    #[serde(rename = "nodeType")]
+    pub node_type_2: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Edge {
+    pub id: String,
+    pub source: String,
+    pub target: String,
+    pub edge_type: String,
+    pub animated: bool,
+    pub label: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Graph {
+    pub nodes: Vec<Node>,
+    pub edges: Vec<Edge>,
 }

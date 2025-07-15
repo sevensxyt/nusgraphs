@@ -4,6 +4,8 @@ use thiserror::Error;
 pub enum GraphBuilderError {
     #[error("module error: {0}")]
     Module(#[from] ModuleError),
+    #[error("graph error: {0}")]
+    Graph(#[from] GraphError),
 }
 
 #[derive(Debug, Error)]
@@ -30,4 +32,10 @@ pub enum StorageError {
     Io(#[from] std::io::Error),
     #[error("serde error: {0}")]
     Serde(#[from] serde_json::Error),
+}
+
+#[derive(Debug, Error)]
+pub enum GraphError {
+    #[error("storage error: {0}")]
+    Storage(#[from] StorageError),
 }
