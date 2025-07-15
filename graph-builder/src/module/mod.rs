@@ -1,15 +1,11 @@
 use crate::api::{bulk_fetch_module_infos, fetch_all_modules};
 use crate::errors::ModuleError;
 use crate::models::{Module, ModuleInfo};
-use crate::storage::{self, Storable};
+use crate::storage;
 
 pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
     if let Some(module_infos) = storage::read_collection::<ModuleInfo>() {
-        println!(
-            "Loaded {} module infos from storage at {}",
-            module_infos.len(),
-            ModuleInfo::path()
-        );
+        println!("Loaded {} module infos from storage", module_infos.len());
         Ok(module_infos)
     } else {
         let modules = get_all_modules().await?;
@@ -31,11 +27,7 @@ pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
 
 async fn get_all_modules() -> Result<Vec<Module>, ModuleError> {
     if let Some(modules) = storage::read_collection::<Module>() {
-        println!(
-            "Loaded {} modules from storage at {}",
-            modules.len(),
-            Module::path()
-        );
+        println!("Loaded {} modules from storage", modules.len());
         Ok(modules)
     } else {
         let modules = fetch_all_modules().await?;

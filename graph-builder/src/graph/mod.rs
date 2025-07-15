@@ -1,7 +1,7 @@
 use crate::config::{Config, FilterRule};
 use crate::errors::GraphError;
 use crate::models::{Edge, Graph, ModuleInfo, Node, NodeData, Position};
-use crate::storage::{self, Storable};
+use crate::storage;
 
 pub struct GraphTransformer {
     modules: Vec<ModuleInfo>,
@@ -9,12 +9,16 @@ pub struct GraphTransformer {
 
 impl GraphTransformer {
     pub fn new(modules: Vec<ModuleInfo>, config: Config) -> Self {
+        if !config.is_default() {
+            println!("Applying config:\n{}", config.details());
+        }
+
         let modules = modules
             .into_iter()
             .filter(|module| {
                 config.filters.iter().all(|filter| match filter.rule {
-                    FilterRule::Include => module.department == filter.target,
-                    FilterRule::Exclude => module.department != filter.target,
+                    FilterRule::Include => module.department == filter.value,
+                    FilterRule::Exclude => module.department != filter.value,
                 })
             })
             .take(config.limit.unwrap_or(usize::MAX))
@@ -25,12 +29,11 @@ impl GraphTransformer {
 
     pub fn build(&self) -> Result<(), GraphError> {
         let graph = if let Some(graph) = storage::read_object::<Graph>() {
-            println!("Graph exists at {}", Graph::path());
             graph
         } else {
             let graph = self.transform();
             storage::write_object(&graph)?;
-            println!("Graph written to storage at {}", Graph::path());
+            println!("Graph written to storage");
             graph
         };
 
