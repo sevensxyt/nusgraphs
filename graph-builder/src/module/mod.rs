@@ -1,10 +1,7 @@
-use crate::api::{fetch_all_modules, fetch_module_info};
+use crate::api::{bulk_fetch_module_infos, fetch_all_modules};
 use crate::errors::ModuleError;
 use crate::models::{Module, ModuleInfo};
 use crate::storage;
-use futures::future::try_join_all;
-
-const CHUNK_SIZE: usize = 100;
 
 pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
     if let Some(module_infos) = storage::read::<ModuleInfo>() {
@@ -12,39 +9,30 @@ pub async fn get_all_module_infos() -> Result<Vec<ModuleInfo>, ModuleError> {
         Ok(module_infos)
     } else {
         let modules = get_all_modules().await?;
-        let mut module_infos = Vec::new();
+        let module_codes = modules
+            .iter()
+            .map(|module| module.module_code.as_str())
+            .collect::<Vec<_>>();
 
-        for chunk in modules.chunks(CHUNK_SIZE) {
-            let futures = chunk
-                .iter()
-                .map(|module| fetch_module_info(&module.module_code));
-            let results = try_join_all(futures).await?;
+        let responses = bulk_fetch_module_infos(&module_codes).await?;
+        let deserialised: Vec<ModuleInfo> = responses
+            .into_iter()
+            .map(|result| serde_json::from_str::<ModuleInfo>(&result))
+            .collect::<Result<_, _>>()?;
 
-            let deserialised: Vec<ModuleInfo> = results
-                .into_iter()
-                .map(|result| serde_json::from_str::<ModuleInfo>(&result))
-                .collect::<Result<_, _>>()?;
-            module_infos.extend(deserialised);
-
-            println!("Processed {} module infos", module_infos.len());
-        }
-
-        storage::write::<ModuleInfo>(&module_infos)?;
-        Ok(module_infos)
+        storage::write::<ModuleInfo>(&deserialised)?;
+        Ok(deserialised)
     }
 }
 
 async fn get_all_modules() -> Result<Vec<Module>, ModuleError> {
-    Ok(match storage::read::<Module>() {
-        Some(modules) => {
-            println!("Loaded {} modules from storage", modules.len());
-            modules
-        }
-        None => {
-            let modules = fetch_all_modules().await?;
-            let modules: Vec<Module> = serde_json::from_str(&modules)?;
-            storage::write::<Module>(&modules)?;
-            modules
-        }
-    })
+    if let Some(modules) = storage::read::<Module>() {
+        println!("Loaded {} modules from storage", modules.len());
+        Ok(modules)
+    } else {
+        let modules = fetch_all_modules().await?;
+        let modules: Vec<Module> = serde_json::from_str(&modules)?;
+        storage::write::<Module>(&modules)?;
+        Ok(modules)
+    }
 }
