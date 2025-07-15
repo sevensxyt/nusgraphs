@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::errors::StorageError;
 use crate::models::{Graph, Module, ModuleInfo};
 use serde::{Serialize, de::DeserializeOwned};
@@ -23,6 +24,12 @@ impl Storable for ModuleInfo {
 impl Storable for Graph {
     fn path() -> &'static str {
         "data/graph.json"
+    }
+}
+
+impl Storable for Config {
+    fn path() -> &'static str {
+        "config.json"
     }
 }
 

@@ -6,6 +6,8 @@ pub enum GraphBuilderError {
     Module(#[from] ModuleError),
     #[error("graph error: {0}")]
     Graph(#[from] GraphError),
+    #[error("config error: {0}")]
+    Config(#[from] StorageError),
 }
 
 #[derive(Debug, Error)]

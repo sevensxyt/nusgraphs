@@ -1,3 +1,4 @@
+use crate::config::{Config, FilterRule};
 use crate::errors::GraphError;
 use crate::models::{Edge, Graph, ModuleInfo, Node, NodeData, Position};
 use crate::storage::{self, Storable};
@@ -7,7 +8,18 @@ pub struct GraphTransformer {
 }
 
 impl GraphTransformer {
-    pub fn new(modules: Vec<ModuleInfo>) -> Self {
+    pub fn new(modules: Vec<ModuleInfo>, config: Config) -> Self {
+        let modules = modules
+            .into_iter()
+            .filter(|module| {
+                config.filters.iter().all(|filter| match filter.rule {
+                    FilterRule::Include => module.department == filter.target,
+                    FilterRule::Exclude => module.department != filter.target,
+                })
+            })
+            .take(config.limit.unwrap_or(usize::MAX))
+            .collect();
+
         Self { modules }
     }
 
